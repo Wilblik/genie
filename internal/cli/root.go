@@ -14,13 +14,13 @@ of release notes from Git repositories while enforcing high-quality commit stand
 using the Conventional Commits specification.`,
 }
 
+func init() {
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
 }
