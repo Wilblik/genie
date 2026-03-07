@@ -8,6 +8,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/wilblik/genie/internal/config"
+	"github.com/wilblik/genie/internal/git"
 )
 
 func init() {
@@ -35,6 +36,10 @@ var initCmd = &cobra.Command{
 
 		if err := cfg.Save(config.ConfigFileName); err != nil {
 			return fmt.Errorf("failed to save config: %w", err)
+		}
+
+		if err := git.InstallPrePushHook(); err != nil {
+			return fmt.Errorf("failed to install git hook: %w", err)
 		}
 
 		fmt.Printf("\n✨ Genie initialized successfully! Config saved to %s\n", config.ConfigFileName)

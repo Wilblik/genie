@@ -1,8 +1,11 @@
-package parser
+package git
 
 import (
 	"reflect"
 	"testing"
+
+	"github.com/wilblik/genie/internal/config"
+	"github.com/wilblik/genie/internal/models"
 )
 
 func TestParseCommit(t *testing.T) {
@@ -107,6 +110,65 @@ func TestParseCommit(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got.Footers, tt.wantFooters) {
 				t.Errorf("Footers = %v, want %v", got.Footers, tt.wantFooters)
+			}
+		})
+	}
+}
+
+func TestValidateCommitMessage(t *testing.T) {
+	cfg := config.NewDefaultConfig()
+	cfg.Types = []string{"feat", "fix"}
+	cfg.RequireScope = true
+	cfg.AllowedScopes = []string{"ui", "api"}
+
+	tests := []struct {
+		name    string
+		msg     *models.CommitMessage
+		wantErr bool
+	}{
+		{
+			name: "Valid feat with scope",
+			msg: &models.CommitMessage{
+				Type:  "feat",
+				Scope: "ui",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid commit message",
+			msg: nil,
+			wantErr: true,
+		},
+		{
+			name: "Invalid type",
+			msg: &models.CommitMessage{
+				Type:  "chore",
+				Scope: "ui",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Missing required scope",
+			msg: &models.CommitMessage{
+				Type: "feat",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Scope not in allowed list",
+			msg: &models.CommitMessage{
+				Type:  "feat",
+				Scope: "db",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateCommitMessage(cfg, tt.msg)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ValidateCommitMessage() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

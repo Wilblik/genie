@@ -1,11 +1,13 @@
-package parser
+package git
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
+	"slices"
 
 	"github.com/wilblik/genie/internal/models"
+	"github.com/wilblik/genie/internal/config"
 )
 
 var (
@@ -31,6 +33,28 @@ func ParseCommitMessage(raw string) (*models.CommitMessage, error) {
 	parseBody(raw, commitMsg, headerEnd, footerStart)
 
 	return commitMsg, nil
+}
+
+func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) error {
+	if commitMsg == nil {
+		return fmt.Errorf("message does not follow Conventional Commits standard\nExample: feat(ui): add new button")
+	}
+
+	if !slices.Contains(cfg.Types, commitMsg.Type) {
+		return fmt.Errorf("type '%s' is not in the allowed types lsit: %v", commitMsg.Type, cfg.Types)
+	}
+
+	if cfg.RequireScope && commitMsg.Scope == "" {
+		return fmt.Errorf("scope is required but was not provided")
+	}
+
+	if len(cfg.AllowedScopes) > 0 && commitMsg.Scope != "" {
+		if !slices.Contains(cfg.AllowedScopes, commitMsg.Scope) {
+			return fmt.Errorf("scope '%s' is not in the allowed scopes list: %v", commitMsg.Scope, cfg.AllowedScopes)
+		}
+	}
+
+	return nil
 }
 
 func parseHeader(raw string, commitMsg *models.CommitMessage) (bool, int) {
