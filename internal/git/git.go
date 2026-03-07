@@ -17,16 +17,20 @@ const PrePushHookScript = `#!/bin/sh
 genie check-push "$@" <&0
 `
 
+const CommitMsgHookScript = `#!/bin/sh
+# Genie: Automated Release Notes & Commit Enforcement
+# This hook calls Genie to validate your commit message.
+
+msg=$(cat "$1")
+genie check-msg "$msg"
+`
+
 func InstallPrePushHook() error {
-	hooksDir, err := getHooksDir()
-	if err != nil { return err; }
+	return installHook("pre-push", PrePushHookScript)
+}
 
-	hookPath := filepath.Join(hooksDir, "pre-push")
-	if err := os.WriteFile(hookPath, []byte(PrePushHookScript), 0755); err != nil {
-		return fmt.Errorf("failed to write hook file: %w", err)
-	}
-
-	return nil
+func InstallCommitMsgHook() error {
+	return installHook("commit-msg", CommitMsgHookScript)
 }
 
 func GetCommitMessages(from, to string) ([]string, error) {
@@ -57,6 +61,18 @@ func GetCommitMessages(from, to string) ([]string, error) {
 	}
 
 	return result, nil
+}
+
+func installHook(name, script string) error {
+	hooksDir, err := getHooksDir()
+	if err != nil { return err; }
+
+	hookPath := filepath.Join(hooksDir, name)
+	if err := os.WriteFile(hookPath, []byte(script), 0755); err != nil {
+		return fmt.Errorf("failed to write hook file %s: %w", name, err)
+	}
+
+	return nil
 }
 
 func getHooksDir() (string, error) {

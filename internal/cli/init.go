@@ -39,7 +39,13 @@ var initCmd = &cobra.Command{
 		}
 
 		if err := git.InstallPrePushHook(); err != nil {
-			return fmt.Errorf("failed to install git hook: %w", err)
+			return fmt.Errorf("failed to install pre-push hook: %w", err)
+		}
+
+		if cfg.EnforceAll {
+			if err := git.InstallCommitMsgHook(); err != nil {
+				return fmt.Errorf("failed to install commit-msg hook: %w", err)
+			}
 		}
 
 		fmt.Printf("\n✨ Genie initialized successfully! Config saved to %s\n", config.ConfigFileName)

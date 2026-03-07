@@ -26,7 +26,7 @@ func ParseCommitMessage(raw string) (*models.CommitMessage, error) {
 	commitMsg := &models.CommitMessage{}
 
 	success, headerEnd := parseHeader(raw, commitMsg)
-	if !success { return nil, fmt.Errorf("No commit header") }
+	if !success { return nil, fmt.Errorf("no commit header") }
 	if headerEnd == -1 { return commitMsg, nil }
 
 	footerStart := parseFooter(raw, commitMsg)
@@ -41,7 +41,7 @@ func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) 
 	}
 
 	if !slices.Contains(cfg.Types, commitMsg.Type) {
-		return fmt.Errorf("type '%s' is not in the allowed types lsit: %v", commitMsg.Type, cfg.Types)
+		return fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.Type, cfg.Types)
 	}
 
 	if cfg.RequireScope && commitMsg.Scope == "" {

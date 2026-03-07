@@ -19,6 +19,7 @@ var checkPushCmd = &cobra.Command{
 	Use:    "check-push",
 	Short:  "Internal: Validates a range of commits being pushed to a branch",
 	Hidden: true,
+	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Read stdin from the pre-push hook
 		scanner := bufio.NewScanner(os.Stdin)
@@ -36,7 +37,7 @@ var checkPushCmd = &cobra.Command{
 
 			targetBranch := strings.TrimPrefix(remoteRef, "refs/heads/")
 			if cfg.EnforceAll || targetBranch == cfg.ProtectedBranch {
-				fmt.Printf("Genie: Validating commits for branch '%s'...\n", targetBranch)
+				fmt.Printf("Validating commits for branch '%s'...\n", targetBranch)
 
 				messages, err := git.GetCommitMessages(remoteSha, localSha)
 				if err != nil { return err; }
