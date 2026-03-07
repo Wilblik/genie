@@ -12,7 +12,7 @@ type Config struct {
 	ProtectedBranch string   `yaml:"protected_branch"`
 	RequireScope    bool     `yaml:"require_scope"`
 	EnforceAll      bool     `yaml:"enforce_all"`
-	AllowedModules  []string `yaml:"allowed_modules,omitempty"`
+	AllowedScopes   []string `yaml:"allowed_scopes,omitempty"`
 	Types           []string `yaml:"types,omitempty"`
 }
 

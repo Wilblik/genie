@@ -17,7 +17,7 @@ func init() {
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Interactive setup for Genie in your repository",
-	Long:  `Guides you through setting up Genie, including protected branches, modules, and enforcement levels.`,
+	Long:  `Guides you through setting up Genie, including protected branches, scopes, and enforcement levels.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if _, err := os.Stat(config.ConfigFileName); err == nil {
 			if !promptOverwrite() {
@@ -27,11 +27,11 @@ var initCmd = &cobra.Command{
 		}
 
 		cfg := config.NewDefaultConfig()
-		if err := promptBranch(cfg); err != nil  { return err; }
-		if err := promptScope(cfg); err != nil   { return err; }
+		if err := promptBranch(cfg);  err != nil { return err; }
+		if err := promptScope(cfg);   err != nil { return err; }
 		if err := promptEnforce(cfg); err != nil { return err; }
-		if err := promptTypes(cfg); err != nil   { return err; }
-		if err := promptModules(cfg); err != nil { return err; }
+		if err := promptTypes(cfg);   err != nil { return err; }
+		if err := promptScopes(cfg);  err != nil { return err; }
 
 		if err := cfg.Save(config.ConfigFileName); err != nil {
 			return fmt.Errorf("failed to save config: %w", err)
@@ -69,7 +69,7 @@ func promptBranch(cfg *config.Config) error {
 
 func promptScope(cfg *config.Config) error {
 	promptScope := promptui.Select{
-		Label:    "Require module scope for all commits?",
+		Label:    "Require scope for all commits?",
 		Items:    []string{"No", "Yes"},
 		HideHelp: true,
 	}
@@ -115,18 +115,18 @@ func promptTypes(cfg *config.Config) error {
 	return nil;
 }
 
-func promptModules(cfg *config.Config) error {
-	promptModules := promptui.Prompt{
-		Label: "Enter allowed module names (comma-separated, leave blank for any)",
+func promptScopes(cfg *config.Config) error {
+	promptScopes := promptui.Prompt{
+		Label: "Enter allowed scope names (comma-separated, leave blank for any)",
 	}
 
-	resModules, err := promptModules.Run()
+	resScopes, err := promptScopes.Run()
 	if err != nil { return err }
-	if resModules != "" {
-		parts := strings.Split(resModules, ",")
-		cfg.AllowedModules = []string{}
+	if resScopes != "" {
+		parts := strings.Split(resScopes, ",")
+		cfg.AllowedScopes = []string{}
 		for _, p := range parts {
-			cfg.AllowedModules = append(cfg.AllowedModules, strings.TrimSpace(p))
+			cfg.AllowedScopes = append(cfg.AllowedScopes, strings.TrimSpace(p))
 		}
 	}
 
