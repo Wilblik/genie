@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const DefaultConfigFileName = ".genie.yaml"
+const ConfigFileName = ".genie.yaml"
 
 type Config struct {
 	ProtectedBranch string   `yaml:"protected_branch"`

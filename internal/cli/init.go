@@ -19,87 +19,116 @@ var initCmd = &cobra.Command{
 	Short: "Interactive setup for Genie in your repository",
 	Long:  `Guides you through setting up Genie, including protected branches, modules, and enforcement levels.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if _, err := os.Stat(config.DefaultConfigFileName); err == nil {
-			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Config file %s already exists. Overwrite?", config.DefaultConfigFileName),
-				IsConfirm: true,
-			}
-			if _, err := prompt.Run(); err != nil {
+		if _, err := os.Stat(config.ConfigFileName); err == nil {
+			if !promptOverwrite() {
 				fmt.Println("Init cancelled.")
-				return nil
+				return nil;
 			}
 		}
 
 		cfg := config.NewDefaultConfig()
+		if err := promptBranch(cfg); err != nil  { return err; }
+		if err := promptScope(cfg); err != nil   { return err; }
+		if err := promptEnforce(cfg); err != nil { return err; }
+		if err := promptTypes(cfg); err != nil   { return err; }
+		if err := promptModules(cfg); err != nil { return err; }
 
-		promptBranch := promptui.Prompt{
-			Label: fmt.Sprintf("What is your protected branch? (default: %s)", cfg.ProtectedBranch),
-		}
-		resBranch, err := promptBranch.Run()
-		if err != nil {
-			return err
-		}
-		if resBranch != "" {
-			cfg.ProtectedBranch = resBranch
-		}
-
-		promptScope := promptui.Select{
-			Label:    "Require module scope for all commits?",
-			Items:    []string{"No", "Yes"},
-			HideHelp: true,
-		}
-		_, resScope, err := promptScope.Run()
-		if err != nil {
-			return err
-		}
-		cfg.RequireScope = (resScope == "Yes")
-
-		promptEnforce := promptui.Select{
-			Label:    "Enforce standard on all branches (Strict) or only on master (Pragmatic)?",
-			Items:    []string{"Pragmatic (Master only)", "Strict (All branches)"},
-			HideHelp: true,
-		}
-		_, resEnforce, err := promptEnforce.Run()
-		if err != nil {
-			return err
-		}
-		cfg.EnforceAll = (resEnforce == "Strict (All branches)")
-
-		promptModules := promptui.Prompt{
-			Label: "Enter allowed module names (comma-separated, leave blank for any)",
-		}
-		resModules, err := promptModules.Run()
-		if err != nil {
-			return err
-		}
-		if resModules != "" {
-			parts := strings.Split(resModules, ",")
-			cfg.AllowedModules = []string{}
-			for _, p := range parts {
-				cfg.AllowedModules = append(cfg.AllowedModules, strings.TrimSpace(p))
-			}
-		}
-
-		promptTypes := promptui.Prompt{
-			Label: "Enter allowed commit types (comma-separated, leave blank for defaults)",
-		}
-		resTypes, err := promptTypes.Run()
-		if err != nil {
-			return err
-		}
-		if resTypes != "" {
-			parts := strings.Split(resTypes, ",")
-			cfg.Types = []string{} // Clear defaults
-			for _, p := range parts {
-				cfg.Types = append(cfg.Types, strings.TrimSpace(p))
-			}
-		}
-
-		if err := cfg.Save(config.DefaultConfigFileName); err != nil {
+		if err := cfg.Save(config.ConfigFileName); err != nil {
 			return fmt.Errorf("failed to save config: %w", err)
 		}
 
-		fmt.Printf("\n✨ Genie initialized successfully! Config saved to %s\n", config.DefaultConfigFileName)
+		fmt.Printf("\n✨ Genie initialized successfully! Config saved to %s\n", config.ConfigFileName)
 		return nil
 	},
+}
+
+func promptOverwrite() bool {
+	prompt := promptui.Prompt{
+		Label:     fmt.Sprintf("Config file %s already exists. Overwrite?", config.ConfigFileName),
+		IsConfirm: true,
+	}
+
+	if _, err := prompt.Run(); err != nil {
+		return false
+	}
+
+	return true;
+}
+
+func promptBranch(cfg *config.Config) error {
+	promptBranch := promptui.Prompt{
+		Label: fmt.Sprintf("What is your protected branch? (default: %s)", cfg.ProtectedBranch),
+	}
+
+	protectedBranch, err := promptBranch.Run()
+	if err != nil { return err }
+	if protectedBranch != "" { cfg.ProtectedBranch = protectedBranch }
+
+	return nil;
+}
+
+func promptScope(cfg *config.Config) error {
+	promptScope := promptui.Select{
+		Label:    "Require module scope for all commits?",
+		Items:    []string{"No", "Yes"},
+		HideHelp: true,
+	}
+
+	_, resScope, err := promptScope.Run()
+	if err != nil { return err }
+	cfg.RequireScope = (resScope == "Yes")
+
+	return nil;
+}
+
+
+func promptEnforce(cfg *config.Config) error {
+	promptEnforce := promptui.Select{
+		Label:    "Enforce standard on all branches (Strict) or only on master (Pragmatic)?",
+		Items:    []string{"Pragmatic (Master only)", "Strict (All branches)"},
+		HideHelp: true,
+	}
+
+	_, resEnforce, err := promptEnforce.Run()
+	if err != nil { return err }
+	cfg.EnforceAll = (resEnforce == "Strict (All branches)")
+
+	return nil;
+}
+
+
+func promptTypes(cfg *config.Config) error {
+	promptTypes := promptui.Prompt{
+		Label: "Enter allowed commit types (comma-separated, leave blank for defaults)",
+	}
+
+	resTypes, err := promptTypes.Run()
+	if err != nil { return err }
+	if resTypes != "" {
+		parts := strings.Split(resTypes, ",")
+		cfg.Types = []string{}
+		for _, p := range parts {
+			cfg.Types = append(cfg.Types, strings.TrimSpace(p))
+		}
+	}
+
+	return nil;
+}
+
+func promptModules(cfg *config.Config) error {
+	promptModules := promptui.Prompt{
+		Label: "Enter allowed module names (comma-separated, leave blank for any)",
+	}
+
+	resModules, err := promptModules.Run()
+	if err != nil { return err }
+	if resModules != "" {
+		parts := strings.Split(resModules, ",")
+		cfg.AllowedModules = []string{}
+		for _, p := range parts {
+			cfg.AllowedModules = append(cfg.AllowedModules, strings.TrimSpace(p))
+		}
+	}
+
+	return nil;
 }
