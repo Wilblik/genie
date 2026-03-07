@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -10,19 +11,29 @@ import (
 var (
 	// Regex for the first line: type(scope)!: subject
 	headerRegex = regexp.MustCompile(`^([a-z]+)(?:\(([^)]+)\))?(!)?:\s+(.+)$`)
-	// Regex for footers: Token: Value or Token #Value
-	footerRegex = regexp.MustCompile(`(?m)^([a-zA-Z0-9-]+|BREAKING CHANGE)(: | #).+$`)
+	// Regex for footers: (Token)(: | #)Value
+	footerRegex = regexp.MustCompile(`^([a-zA-Z0-9-]+|BREAKING CHANGE)(: | #)`)
 )
 
-// ParseCommit parses a raw git commit message string into a CommitEntry model.
-// It uses string slicing to create "views" into the original message, minimizing allocations.
-func ParseCommit(raw string) (*models.CommitEntry, error) {
+func ParseCommitMessage(raw string) (*models.CommitMessage, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return nil, nil
 	}
 
-	// 1. Identify the Header (everything up to the first newline)
+	commitMsg := &models.CommitMessage{}
+
+	success, headerEnd := parseHeader(raw, commitMsg)
+	if !success { return nil, fmt.Errorf("No commit header") }
+	if headerEnd == -1 { return commitMsg, nil }
+
+	footerStart := parseFooter(raw, commitMsg)
+	parseBody(raw, commitMsg, headerEnd, footerStart)
+
+	return commitMsg, nil
+}
+
+func parseHeader(raw string, commitMsg *models.CommitMessage) (bool, int) {
 	headerEnd := strings.IndexByte(raw, '\n')
 	header := raw
 	if headerEnd != -1 {
@@ -31,56 +42,62 @@ func ParseCommit(raw string) (*models.CommitEntry, error) {
 
 	header_parts := headerRegex.FindStringSubmatch(header)
 	if header_parts == nil {
-		return nil, nil
+		return false, headerEnd
 	}
 
-	entry := &models.CommitEntry{
-		Type:       header_parts[1],
-		Scope:      header_parts[2],
-		IsBreaking: header_parts[3] == "!",
-		Subject:    header_parts[4],
-	}
+	commitMsg.Type = header_parts[1]
+	commitMsg.Scope = header_parts[2]
+	commitMsg.IsBreaking = header_parts[3] == "!"
+	commitMsg.Subject = header_parts[4]
 
-	if headerEnd == -1 {
-		return entry, nil
-	}
+	return true, headerEnd
+}
 
-	// 2. Identify the Footer block
-	// Footers are at the very end of the message, separated from the body by a blank line.
+func parseFooter(raw string, commitMsg *models.CommitMessage) int {
 	footerStart := len(raw)
 	lastBlankLine := strings.LastIndex(raw, "\n\n")
 
 	if lastBlankLine != -1 {
 		potentialFooterBlock := raw[lastBlankLine+2:]
 		lines := strings.Split(potentialFooterBlock, "\n")
-		isAllFooters := true
+		tempFooters := make(map[string]string)
+		isValidBlock := true
+
 		for _, line := range lines {
-			if line != "" && !footerRegex.MatchString(line) {
-				isAllFooters = false
+			if line == "" {
+				continue
+			}
+			parts := footerRegex.FindStringSubmatch(line)
+			if parts == nil {
+				isValidBlock = false
 				break
 			}
+
+			key := parts[1]
+			sep := parts[2]
+			value := line[len(key)+len(sep):]
+			tempFooters[key] = value
 		}
 
-		if isAllFooters {
+		if isValidBlock && len(tempFooters) > 0 {
 			footerStart = lastBlankLine + 2
-			entry.Footers = lines
-			for _, f := range lines {
-				if strings.HasPrefix(strings.ToUpper(f), "BREAKING CHANGE:") {
-					entry.IsBreaking = true
-				}
+			commitMsg.Footers = tempFooters
+			if _, ok := tempFooters["BREAKING CHANGE"]; ok {
+				commitMsg.IsBreaking = true
 			}
 		}
 	}
 
-	// 3. Identify the Body
+	return footerStart
+}
+
+func parseBody(raw string, commitMsg *models.CommitMessage, headerEnd int, footerStart int) {
 	bodyStart := headerEnd + 1
 	if bodyStart < len(raw) && raw[bodyStart] == '\n' {
 		bodyStart++
 	}
 
 	if bodyStart < footerStart {
-		entry.Body = strings.TrimSpace(raw[bodyStart:footerStart])
+		commitMsg.Body = strings.TrimSpace(raw[bodyStart:footerStart])
 	}
-
-	return entry, nil
 }

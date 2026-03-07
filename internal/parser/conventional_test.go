@@ -14,7 +14,7 @@ func TestParseCommit(t *testing.T) {
 		wantScope   string
 		wantBody    string
 		isBreaking  bool
-		wantFooters []string
+		wantFooters map[string]string
 	}{
 		{
 			name:     "Simple feat",
@@ -43,7 +43,7 @@ func TestParseCommit(t *testing.T) {
 			wantType:    "feat",
 			wantSubj:    "add feature",
 			isBreaking:  true,
-			wantFooters: []string{"BREAKING CHANGE: this is breaking"},
+			wantFooters: map[string]string{"BREAKING CHANGE": "this is breaking"},
 		},
 		{
 			name:        "Custom footer",
@@ -51,7 +51,7 @@ func TestParseCommit(t *testing.T) {
 			wantType:    "fix",
 			wantSubj:    "resolve race condition",
 			wantScope:   "core",
-			wantFooters: []string{"Jira-Ticket: PROJ-123", "Signed-off-by: Test User"},
+			wantFooters: map[string]string{"Jira-Ticket": "PROJ-123", "Signed-off-by": "Test User"},
 		},
 		{
 			name:        "Body and footers",
@@ -59,18 +59,33 @@ func TestParseCommit(t *testing.T) {
 			wantType:    "feat",
 			wantSubj:    "some feat",
 			wantBody:    "This is the body content.",
-			wantFooters: []string{"Refs: #42"},
+			wantFooters: map[string]string{"Refs": "#42"},
+		},
+		{
+			name:        "Footer with # separator",
+			raw:         "fix: some fix\n\nFixes #123",
+			wantType:    "fix",
+			wantSubj:    "some fix",
+			wantFooters: map[string]string{"Fixes": "123"},
+		},
+		{
+			name:       "BREAKING CHANGE in body (not footer)",
+			raw:        "feat: subject\n\nBREAKING CHANGE: this is in the body\nThis makes it a body, not a footer.",
+			wantType:   "feat",
+			wantSubj:   "subject",
+			wantBody:   "BREAKING CHANGE: this is in the body\nThis makes it a body, not a footer.",
+			isBreaking: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCommit(tt.raw)
+			got, err := ParseCommitMessage(tt.raw)
 			if err != nil {
-				t.Fatalf("ParseCommit() error = %v", err)
+				t.Fatalf("ParseCommitMessage() error = %v", err)
 			}
 			if got == nil {
-				t.Fatal("ParseCommit() returned nil")
+				t.Fatal("ParseCommitMessage() returned nil")
 			}
 			if got.Type != tt.wantType {
 				t.Errorf("Type = %v, want %v", got.Type, tt.wantType)
