@@ -32,8 +32,10 @@ var checkPushCmd = &cobra.Command{
 			remoteSha := parts[3]
 			localSha := parts[1]
 
-			cfg, err := config.Load(config.ConfigFileName)
-			if err != nil { return err; }
+			cfg, err := config.Load()
+			if err != nil {
+				return fmt.Errorf("configuration file reading failed. Reason: %s\n\nPlease run 'genie init' first if %s is not present", err, config.ConfigFileName)
+			}
 
 			targetBranch := strings.TrimPrefix(remoteRef, "refs/heads/")
 			if cfg.EnforceAll || targetBranch == cfg.ProtectedBranch {

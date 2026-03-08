@@ -21,9 +21,9 @@ var checkMsgCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		msg := args[0]
 
-		cfg, err := config.Load(config.ConfigFileName)
+		cfg, err := config.Load()
 		if err != nil {
-			return fmt.Errorf("configuration file not found. Please run 'genie init' first")
+			return fmt.Errorf("configuration file reading failed. Please run 'genie init' first if %s is not present", config.ConfigFileName)
 		}
 
 		commitMsg, err := git.ParseCommitMessage(msg)

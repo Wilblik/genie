@@ -34,7 +34,7 @@ var initCmd = &cobra.Command{
 		if err := promptTypes(cfg);   err != nil { return err; }
 		if err := promptScopes(cfg);  err != nil { return err; }
 
-		if err := cfg.Save(config.ConfigFileName); err != nil {
+		if err := cfg.Save(); err != nil {
 			return fmt.Errorf("failed to save config: %w", err)
 		}
 

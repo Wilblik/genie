@@ -25,8 +25,8 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-func Load(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+func Load() (*Config, error) {
+	data, err := os.ReadFile(ConfigFileName)
 	if err != nil {
 		return nil, err
 	}
@@ -39,11 +39,11 @@ func Load(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-func (c *Config) Save(path string) error {
+func (c *Config) Save() error {
 	data, err := yaml.Marshal(c)
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(ConfigFileName, data, 0644)
 }

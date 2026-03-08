@@ -14,8 +14,13 @@ type CommitMessage struct {
 
 // ReleaseInfo represents the full data for a single release or changelog range.
 type ReleaseInfo struct {
-	Tag         string          // The version tag (e.g., v1.0.0)
-	Date        time.Time       // Release date
-	Modules     []string        // List of all unique scopes detected
-	Commits     []CommitMessage // All commits in this release
+	Tag    string
+	Date   time.Time
+	Groups map[string]TypeGroup
+}
+
+// TypeGroup represents a collection of scopes belonging to a specific commit type.
+type TypeGroup struct {
+	Title  string
+	Scopes map[string][]CommitMessage // represents a collection of commits belonging to a specific scope.
 }
