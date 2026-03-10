@@ -17,22 +17,22 @@ var (
 	footerRegex = regexp.MustCompile(`^([a-zA-Z0-9-]+|BREAKING CHANGE)(: | #)`)
 )
 
-func ParseCommitMessage(raw string) (*models.CommitMessage, error) {
+func ParseCommitMessage(raw string) *models.CommitMessage {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return nil, nil
+		return nil
 	}
 
 	commitMsg := &models.CommitMessage{}
 
 	success, headerEnd := parseHeader(raw, commitMsg)
-	if !success { return nil, fmt.Errorf("no commit header") }
-	if headerEnd == -1 { return commitMsg, nil }
+	if !success { return nil }
+	if headerEnd == -1 { return commitMsg }
 
 	footerStart := parseFooter(raw, commitMsg)
 	parseBody(raw, commitMsg, headerEnd, footerStart)
 
-	return commitMsg, nil
+	return commitMsg
 }
 
 func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) error {
