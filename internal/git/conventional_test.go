@@ -90,8 +90,8 @@ func TestParseCommit(t *testing.T) {
 			if got == nil {
 				t.Fatal("ParseCommitMessage() returned nil")
 			}
-			if got.Type != tt.wantType {
-				t.Errorf("Type = %v, want %v", got.Type, tt.wantType)
+			if got.ChangeType != tt.wantType {
+				t.Errorf("Type = %v, want %v", got.ChangeType, tt.wantType)
 			}
 			if got.Subject != tt.wantSubj {
 				t.Errorf("Subject = %v, want %v", got.Subject, tt.wantSubj)
@@ -129,7 +129,7 @@ func TestValidateCommitMessage(t *testing.T) {
 		{
 			name: "Valid feat with scope",
 			msg: &models.CommitMessage{
-				Type:  "feat",
+				ChangeType:  "feat",
 				Scope: "ui",
 			},
 			wantErr: false,
@@ -142,7 +142,7 @@ func TestValidateCommitMessage(t *testing.T) {
 		{
 			name: "Invalid type",
 			msg: &models.CommitMessage{
-				Type:  "chore",
+				ChangeType:  "chore",
 				Scope: "ui",
 			},
 			wantErr: true,
@@ -150,14 +150,14 @@ func TestValidateCommitMessage(t *testing.T) {
 		{
 			name: "Missing required scope",
 			msg: &models.CommitMessage{
-				Type: "feat",
+				ChangeType: "feat",
 			},
 			wantErr: true,
 		},
 		{
 			name: "Scope not in allowed list",
 			msg: &models.CommitMessage{
-				Type:  "feat",
+				ChangeType:  "feat",
 				Scope: "db",
 			},
 			wantErr: true,

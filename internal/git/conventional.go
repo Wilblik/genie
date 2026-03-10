@@ -17,22 +17,22 @@ var (
 	footerRegex = regexp.MustCompile(`^([a-zA-Z0-9-]+|BREAKING CHANGE)(: | #)`)
 )
 
-func ParseCommitMessage(raw string) (*models.CommitMessage, error) {
+func ParseCommitMessage(raw string) *models.CommitMessage {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return nil, nil
+		return nil
 	}
 
 	commitMsg := &models.CommitMessage{}
 
 	success, headerEnd := parseHeader(raw, commitMsg)
-	if !success { return nil, fmt.Errorf("no commit header") }
-	if headerEnd == -1 { return commitMsg, nil }
+	if !success { return nil }
+	if headerEnd == -1 { return commitMsg }
 
 	footerStart := parseFooter(raw, commitMsg)
 	parseBody(raw, commitMsg, headerEnd, footerStart)
 
-	return commitMsg, nil
+	return commitMsg
 }
 
 func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) error {
@@ -40,8 +40,8 @@ func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) 
 		return fmt.Errorf("message does not follow Conventional Commits standard\nExample: feat(ui): add new button")
 	}
 
-	if !slices.Contains(cfg.Types, commitMsg.Type) {
-		return fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.Type, cfg.Types)
+	if !slices.Contains(cfg.Types, commitMsg.ChangeType) {
+		return fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.ChangeType, cfg.Types)
 	}
 
 	if cfg.RequireScope && commitMsg.Scope == "" {
@@ -69,7 +69,7 @@ func parseHeader(raw string, commitMsg *models.CommitMessage) (bool, int) {
 		return false, headerEnd
 	}
 
-	commitMsg.Type = header_parts[1]
+	commitMsg.ChangeType = header_parts[1]
 	commitMsg.Scope = header_parts[2]
 	commitMsg.IsBreaking = header_parts[3] == "!"
 	commitMsg.Subject = header_parts[4]
