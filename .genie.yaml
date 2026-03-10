@@ -1,0 +1,13 @@
+protected_branch: master
+require_scope: false
+enforce_all: false
+types:
+    - feat
+    - fix
+    - docs
+    - style
+    - refactor
+    - perf
+    - test
+    - chore
+    - revert

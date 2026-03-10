@@ -1,0 +1,25 @@
+name: Genie PR Title Check
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install Genie
+        run: go install github.com/wilblik/genie/cmd/genie@latest
+
+      - name: Validate PR Title
+        run: genie check-msg "${{ github.event.pull_request.title }}"
