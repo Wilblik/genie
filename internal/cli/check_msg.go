@@ -43,7 +43,7 @@ var checkMsgCmd = &cobra.Command{
 
 func printParsedMsg(commitMsg *models.CommitMessage) {
 	fmt.Println("✅ Message is valid!")
-	fmt.Printf("Type:    %s\n", commitMsg.Type)
+	fmt.Printf("Type:    %s\n", commitMsg.ChangeType)
 	if commitMsg.Scope != "" {
 		fmt.Printf("Scope:   %s\n", commitMsg.Scope)
 	}

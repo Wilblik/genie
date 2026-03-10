@@ -4,7 +4,7 @@ import "time"
 
 // CommitMessage represents a single conventional commit parsed from its raw message string.
 type CommitMessage struct {
-	Type       string            // e.g., feat, fix, chore
+	ChangeType string            // e.g., feat, fix, chore
 	Scope      string            // e.g., ui, api, db (optional)
 	Subject    string            // Short summary
 	Body       string            // Detailed explanation (optional)
@@ -16,11 +16,11 @@ type CommitMessage struct {
 type ReleaseInfo struct {
 	Tag    string
 	Date   time.Time
-	Groups map[string]TypeGroup
+	ChangeTypes map[string]ChangeType
 }
 
-// TypeGroup represents a collection of scopes belonging to a specific commit type.
-type TypeGroup struct {
+// Type represents a collection of scopes belonging to a specific commit type.
+type ChangeType struct {
 	Title  string
 	Scopes map[string][]CommitMessage // represents a collection of commits belonging to a specific scope.
 }

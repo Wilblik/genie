@@ -76,7 +76,7 @@ func getReleaseInfo(from, to string, cfg *config.Config) (*models.ReleaseInfo, e
 	releaseInfo := &models.ReleaseInfo{
 		Tag:  to,
 		Date: time.Now(),
-		Groups: make(map[string]models.TypeGroup),
+		ChangeTypes: make(map[string]models.ChangeType),
 	}
 
 	for _, msg := range commitMessages {
@@ -86,17 +86,16 @@ func getReleaseInfo(from, to string, cfg *config.Config) (*models.ReleaseInfo, e
 		if err := git.ValidateCommitMessage(cfg, parsedCommitMsg); err != nil { continue }
 
 		scope := parsedCommitMsg.Scope
-		if scope == "" { scope = "general" }
 
-		if _, ok := releaseInfo.Groups[parsedCommitMsg.Type]; !ok {
-			releaseInfo.Groups[parsedCommitMsg.Type] = models.TypeGroup{
-				Title: getTitleForType(parsedCommitMsg.Type),
+		if _, ok := releaseInfo.ChangeTypes[parsedCommitMsg.ChangeType]; !ok {
+			releaseInfo.ChangeTypes[parsedCommitMsg.ChangeType] = models.ChangeType{
+				Title: getTitleForType(parsedCommitMsg.ChangeType),
 				Scopes: make(map[string][]models.CommitMessage),
 			}
 		}
 
-		releaseInfo.Groups[parsedCommitMsg.Type].Scopes[scope] = append(
-			releaseInfo.Groups[parsedCommitMsg.Type].Scopes[scope],
+		releaseInfo.ChangeTypes[parsedCommitMsg.ChangeType].Scopes[scope] = append(
+			releaseInfo.ChangeTypes[parsedCommitMsg.ChangeType].Scopes[scope],
 			*parsedCommitMsg,
 		)
 	}

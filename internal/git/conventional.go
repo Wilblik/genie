@@ -40,8 +40,8 @@ func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) 
 		return fmt.Errorf("message does not follow Conventional Commits standard\nExample: feat(ui): add new button")
 	}
 
-	if !slices.Contains(cfg.Types, commitMsg.Type) {
-		return fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.Type, cfg.Types)
+	if !slices.Contains(cfg.Types, commitMsg.ChangeType) {
+		return fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.ChangeType, cfg.Types)
 	}
 
 	if cfg.RequireScope && commitMsg.Scope == "" {
@@ -69,7 +69,7 @@ func parseHeader(raw string, commitMsg *models.CommitMessage) (bool, int) {
 		return false, headerEnd
 	}
 
-	commitMsg.Type = header_parts[1]
+	commitMsg.ChangeType = header_parts[1]
 	commitMsg.Scope = header_parts[2]
 	commitMsg.IsBreaking = header_parts[3] == "!"
 	commitMsg.Subject = header_parts[4]
