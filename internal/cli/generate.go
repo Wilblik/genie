@@ -81,9 +81,8 @@ func getReleaseInfo(from, to string, cfg *config.Config) (*models.ReleaseInfo, e
 
 	for _, msg := range commitMessages {
 		// Skip non conventional commits
-		parsedCommitMsg, err := git.ParseCommitMessage(msg)
-		if err != nil || parsedCommitMsg == nil { continue }
-		if err := git.ValidateCommitMessage(cfg, parsedCommitMsg); err != nil { continue }
+		parsedCommitMsg, err := git.ParseCommitMessage(msg, cfg)
+		if err != nil { continue }
 
 		scope := parsedCommitMsg.Scope
 

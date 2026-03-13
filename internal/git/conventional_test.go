@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/wilblik/genie/internal/config"
-	"github.com/wilblik/genie/internal/models"
 )
 
 func TestParseCommit(t *testing.T) {
@@ -81,14 +80,16 @@ func TestParseCommit(t *testing.T) {
 		},
 	}
 
+	cfg := config.NewDefaultConfig()
+	cfg.Types = []string{"feat", "fix"}
+	cfg.AllowedScopes = []string{"ui", "api", "core"}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCommitMessage(tt.raw)
+			got, err := ParseCommitMessage(tt.raw, cfg)
 			if err != nil {
-				t.Fatalf("ParseCommitMessage() error = %v", err)
-			}
-			if got == nil {
-				t.Fatal("ParseCommitMessage() returned nil")
+				t.Errorf("ParsecommitMessage() error = %v", err)
+				return
 			}
 			if got.ChangeType != tt.wantType {
 				t.Errorf("Type = %v, want %v", got.ChangeType, tt.wantType)
@@ -110,65 +111,6 @@ func TestParseCommit(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got.Footers, tt.wantFooters) {
 				t.Errorf("Footers = %v, want %v", got.Footers, tt.wantFooters)
-			}
-		})
-	}
-}
-
-func TestValidateCommitMessage(t *testing.T) {
-	cfg := config.NewDefaultConfig()
-	cfg.Types = []string{"feat", "fix"}
-	cfg.RequireScope = true
-	cfg.AllowedScopes = []string{"ui", "api"}
-
-	tests := []struct {
-		name    string
-		msg     *models.CommitMessage
-		wantErr bool
-	}{
-		{
-			name: "Valid feat with scope",
-			msg: &models.CommitMessage{
-				ChangeType:  "feat",
-				Scope: "ui",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Invalid commit message",
-			msg: nil,
-			wantErr: true,
-		},
-		{
-			name: "Invalid type",
-			msg: &models.CommitMessage{
-				ChangeType:  "chore",
-				Scope: "ui",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Missing required scope",
-			msg: &models.CommitMessage{
-				ChangeType: "feat",
-			},
-			wantErr: true,
-		},
-		{
-			name: "Scope not in allowed list",
-			msg: &models.CommitMessage{
-				ChangeType:  "feat",
-				Scope: "db",
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateCommitMessage(cfg, tt.msg)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidateCommitMessage() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

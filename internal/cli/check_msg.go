@@ -26,14 +26,8 @@ var checkMsgCmd = &cobra.Command{
 			return fmt.Errorf("configuration file reading failed. Please run 'genie init' first if %s is not present", config.ConfigFileName)
 		}
 
-		commitMsg, err := git.ParseCommitMessage(msg)
-		if err != nil {
-			return fmt.Errorf("error parsing message: %w", err)
-		}
-
-		if err := git.ValidateCommitMessage(cfg, commitMsg); err != nil {
-			return err
-		}
+		commitMsg, err := git.ParseCommitMessage(msg, cfg)
+		if err != nil { return err }
 
 		printParsedMsg(commitMsg)
 

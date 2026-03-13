@@ -17,44 +17,41 @@ var (
 	footerRegex = regexp.MustCompile(`^([a-zA-Z0-9-]+|BREAKING CHANGE)(: | #)`)
 )
 
-func ParseCommitMessage(raw string) *models.CommitMessage {
+func ParseCommitMessage(raw string, cfg *config.Config) (*models.CommitMessage, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return nil
+		return nil, fmt.Errorf("commit message is empty")
 	}
 
 	commitMsg := &models.CommitMessage{}
 
 	success, headerEnd := parseHeader(raw, commitMsg)
-	if !success { return nil }
-	if headerEnd == -1 { return commitMsg }
-
-	footerStart := parseFooter(raw, commitMsg)
-	parseBody(raw, commitMsg, headerEnd, footerStart)
-
-	return commitMsg
-}
-
-func ValidateCommitMessage(cfg *config.Config, commitMsg *models.CommitMessage) error {
-	if commitMsg == nil {
-		return fmt.Errorf("message does not follow Conventional Commits standard\nExample: feat(ui): add new button")
+	if !success {
+		return nil, fmt.Errorf("message does not follow Conventional Commits standard\nExample: feat(ui): add new button")
 	}
 
 	if !slices.Contains(cfg.Types, commitMsg.ChangeType) {
-		return fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.ChangeType, cfg.Types)
+		return nil, fmt.Errorf("type '%s' is not in the allowed types list: %v", commitMsg.ChangeType, cfg.Types)
 	}
 
 	if cfg.RequireScope && commitMsg.Scope == "" {
-		return fmt.Errorf("scope is required but was not provided")
+		return nil, fmt.Errorf("scope is required but was not provided")
 	}
 
 	if len(cfg.AllowedScopes) > 0 && commitMsg.Scope != "" {
 		if !slices.Contains(cfg.AllowedScopes, commitMsg.Scope) {
-			return fmt.Errorf("scope '%s' is not in the allowed scopes list: %v", commitMsg.Scope, cfg.AllowedScopes)
+			return nil, fmt.Errorf("scope '%s' is not in the allowed scopes list: %v", commitMsg.Scope, cfg.AllowedScopes)
 		}
 	}
 
-	return nil
+	if headerEnd == -1 {
+		return commitMsg, nil
+	}
+
+	footerStart := parseFooter(raw, commitMsg)
+	parseBody(raw, commitMsg, headerEnd, footerStart)
+
+	return commitMsg, nil
 }
 
 func parseHeader(raw string, commitMsg *models.CommitMessage) (bool, int) {

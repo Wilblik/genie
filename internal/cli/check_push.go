@@ -45,10 +45,8 @@ var checkPushCmd = &cobra.Command{
 				if err != nil { return err; }
 
 				for _, msg := range messages {
-					commitMsg, err := git.ParseCommitMessage(msg)
-					if err != nil { return err; }
-
-					if err := git.ValidateCommitMessage(cfg, commitMsg); err != nil {
+					_, err := git.ParseCommitMessage(msg, cfg)
+					if err != nil {
 						fmt.Printf("❌ Invalid commit message in push range:\n%s\n", msg)
 						return err
 					}
