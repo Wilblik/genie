@@ -41,10 +41,14 @@ func InstallCommitMsgHook() error {
 func GetCommitMessages(from, to string) ([]string, error) {
 	args := []string{"log", "--format=%B%x00"}
 
+	if from == "TAIL" || from == "0000000000000000000000000000000000000000" {
+		from = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+	}
+
 	isFromDate := isDate(from)
-	if from != "" && from != "0000000000000000000000000000000000000000" {
+	if from != "" {
 		if isFromDate {
-			args = append(args, "--since=\""+formatDate(from)+"\"")
+			args = append(args, "--since="+formatDate(from))
 		} else {
 			// TODO Is it needed?
 			//if err := exec.Command("git", "cat-file", "-e", from).Run(); err != nil {
@@ -57,8 +61,8 @@ func GetCommitMessages(from, to string) ([]string, error) {
 
 	if to == "" { to = "HEAD" }
 	if isDate(to) {
-		args = append(args, "--until=\""+formatDate(to)+"\"")
-	} else if !isFromDate {
+		args = append(args, "--until="+formatDate(to))
+	} else if from != "" && !isFromDate {
 		fromTag := args[len(args)-1]
 		args[len(args)-1] = fromTag+".."+to
 	} else {

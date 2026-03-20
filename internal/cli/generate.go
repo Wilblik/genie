@@ -22,7 +22,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
-	generateCmd.Flags().StringVar(&from, "from", "", "Starting point (tag, hash, or YYYY-MM-DD)")
+	generateCmd.Flags().StringVar(&from, "from", "", "Starting point (tag, hash, TAIL, or YYYY-MM-DD)")
 	generateCmd.Flags().StringVar(&to, "to", "HEAD", "Ending point (tag, hash, or branch)")
 	generateCmd.Flags().StringVar(&format, "format", "markdown", "Output format (markdown)")
 }
