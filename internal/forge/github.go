@@ -118,7 +118,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Extract the release notes from the Git tag's message body
-          git tag -l --format='%%(contents:body)' $NEW_TAG > release_notes.md
+          git tag -l --format='%(contents:body)' $NEW_TAG > release_notes.md
 
           # Create the official GitHub Release UI page
           gh release create $NEW_TAG \
