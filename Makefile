@@ -3,13 +3,9 @@ BUILD_DIR=bin
 
 ifeq ($(OS),Windows_NT)
 	BINARY_OUT=$(BINARY_NAME).exe
-	INSTALL_DIR?=$(USERPROFILE)\bin
-	CP=copy
 	MKDIR=mkdir
 else
 	BINARY_OUT=$(BINARY_NAME)
-	INSTALL_DIR?=$(HOME)/.local/bin
-	CP=cp
 	MKDIR=mkdir -p
 endif
 
