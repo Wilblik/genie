@@ -1,0 +1,93 @@
+#+TITLE: Genie
+#+DESCRIPTION: A magical CLI tool for Conventional Commits and Automated Releases
+
+* Genie
+Genie is a cross-platform CLI tool designed to enforce high-quality commit standards using the [[https://www.conventionalcommits.org/][Conventional Commits]] specification and automate the generation of rich, Markdown-formatted release notes directly from your Git history.
+
+It works with any programming language and integrates seamlessly into your local git hooks and GitHub Actions.
+
+** Features
+- 🛡️ *Commit Enforcement*: Validate commit messages and branches locally via Git hooks before pushing.
+- 📝 *Automated Release Notes*: Generate beautifully formatted Markdown release notes based on commit types (Features, Bug Fixes, Breaking Changes, etc.).
+- 🚀 *One-Click Releases*: Automatically calculate the next Semantic Version (SemVer), tag the repository, and generate release notes.
+- ⚙️ *CI/CD Ready*: Built-in commands to scaffold GitHub Actions for PR title validation and automated releases.
+
+** Installation
+*** Option 1: Download from GitHub Releases
+You can download the pre-compiled binary for your operating system (Linux, macOS, Windows) directly from the [[https://github.com/wilblik/genie/releases][GitHub Releases page]].
+
+*** Option 2: Go Install
+If you have the Go toolchain installed, you can install Genie via:
+
+#+BEGIN_SRC sh
+go install github.com/wilblik/genie/cmd/genie@latest
+#+END_SRC
+Ensure that your =$(go env GOPATH)/bin= directory is in your system's =PATH=.
+
+*** Option 3: Mekfile
+If you clone the repository, you can build and install it via Make (Go toolchain required):
+#+BEGIN_SRC sh
+make install
+#+END_SRC
+
+** Usage
+
+*** 1. Initialization
+Initialize Genie in your repository. This will guide you through creating a =.genie.yaml= configuration file and optionally installing local Git hooks.
+
+#+BEGIN_SRC sh
+genie init git
+#+END_SRC
+
+If you are using GitHub and want to set up automated workflows for PR validation and release generation, run:
+
+#+BEGIN_SRC sh
+genie init github
+#+END_SRC
+
+*** 2. Generating Release Notes
+To generate release notes without creating a tag, you can use the =generate= command.
+
+#+BEGIN_SRC sh
+# Generate notes from the previous tag to HEAD
+genie generate
+
+# Generate notes from the very beginning of the repository to HEAD
+genie generate --from TAIL
+
+# Generate notes for a specific range
+genie generate --from v1.0.0 --to v2.0.0
+#+END_SRC
+
+*** 3. Creating a Release
+To automatically calculate the next version bump (based on your commits), generate notes, and create an annotated Git tag:
+
+#+BEGIN_SRC sh
+genie release
+#+END_SRC
+
+To create the release and immediately push the tag to your remote repository:
+
+#+BEGIN_SRC sh
+genie release --push
+#+END_SRC
+
+** Configuration
+Genie is configured via a =.genie.yaml= file at the root of your repository. 
+
+Example configuration:
+#+BEGIN_SRC yaml
+protected_branch: master
+require_scope: false
+enforce_all: false
+types:
+  - feat
+  - fix
+  - docs
+  - style
+  - refactor
+  - perf
+  - test
+  - chore
+  - revert
+#+END_SRC
