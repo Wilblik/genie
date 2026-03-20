@@ -90,7 +90,7 @@ func GetAllTags() ([]string, error) {
 }
 
 func CreateTag(tag, message string) error {
-	cmd := exec.Command("git", "tag", "-a", tag, "-m", message)
+	cmd := exec.Command("git", "tag", "-a", tag, "--cleanup=whitespace", "-m", message)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("git tag failed: %v\nOutput: %s", err, string(out))
 	}
