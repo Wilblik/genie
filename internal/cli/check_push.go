@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/wilblik/genie/internal/config"
 	"github.com/wilblik/genie/internal/git"
+	"github.com/wilblik/genie/internal/parser"
 )
 
 func init() {
@@ -45,7 +46,7 @@ var checkPushCmd = &cobra.Command{
 				if err != nil { return err; }
 
 				for _, msg := range messages {
-					_, err := git.ParseCommitMessage(msg, cfg)
+					_, err := parser.ParseCommitMessage(msg, cfg)
 					if err != nil {
 						fmt.Printf("❌ Invalid commit message in push range:\n%s\n", msg)
 						return err

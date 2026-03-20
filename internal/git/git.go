@@ -85,6 +85,21 @@ func GetAllTags() ([]string, error) {
 	return result, nil
 }
 
+func CreateTag(tag, message string) error {
+	cmd := exec.Command("git", "tag", "-a", tag, "-m", message)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git tag failed: %v\nOutput: %s", err, string(out))
+	}
+	return nil
+}
+
+func PushTag(tag string) error {
+	cmd := exec.Command("git", "push", "origin", tag)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git push tag failed: %v\nOutput: %s", err, string(out))
+	}
+	return nil
+}
 
 func isDate(s string) bool {
 	match, _ := regexp.MatchString(`^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}:\d{2})?$`, s) // YYYY-MM-DD HH:MM:SS

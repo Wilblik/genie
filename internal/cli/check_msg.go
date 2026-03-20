@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/wilblik/genie/internal/config"
-	"github.com/wilblik/genie/internal/git"
+	"github.com/wilblik/genie/internal/parser"
 	"github.com/wilblik/genie/internal/models"
 )
 
@@ -26,7 +26,7 @@ var checkMsgCmd = &cobra.Command{
 			return fmt.Errorf("configuration file reading failed. Please run 'genie init' first if %s is not present", config.ConfigFileName)
 		}
 
-		commitMsg, err := git.ParseCommitMessage(msg, cfg)
+		commitMsg, err := parser.ParseCommitMessage(msg, cfg)
 		if err != nil { return err }
 
 		printParsedMsg(commitMsg)

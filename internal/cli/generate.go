@@ -8,6 +8,7 @@ import (
 	"github.com/wilblik/genie/internal/config"
 	"github.com/wilblik/genie/internal/exporter"
 	"github.com/wilblik/genie/internal/git"
+	"github.com/wilblik/genie/internal/parser"
 	"github.com/wilblik/genie/internal/models"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -81,7 +82,7 @@ func getReleaseInfo(from, to string, cfg *config.Config) (*models.ReleaseInfo, e
 
 	for _, msg := range commitMessages {
 		// Skip non conventional commits
-		parsedCommitMsg, err := git.ParseCommitMessage(msg, cfg)
+		parsedCommitMsg, err := parser.ParseCommitMessage(msg, cfg)
 		if err != nil { continue }
 
 		scope := parsedCommitMsg.Scope
