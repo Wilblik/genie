@@ -68,7 +68,7 @@ jobs:
           go-version: '1.25'
 
       - name: Install Genie
-        run: go build -o $(go env GOPATH)/bin/genie cmd/genie/main.go
+        run: go install github.com/wilblik/genie/cmd/genie@latest
 
       - name: Validate PR Title
         run: genie check-msg "${{ github.event.pull_request.title }}"
@@ -102,7 +102,7 @@ jobs:
           go-version: '1.25'
 
       - name: Install Genie
-        run: go build -o $(go env GOPATH)/bin/genie cmd/genie/main.go
+        run: go install github.com/wilblik/genie/cmd/genie@latest
 
       - name: Create Release Tag
         run: |
@@ -113,6 +113,11 @@ jobs:
           NEW_TAG=$(git describe --tags --abbrev=0)
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 
+      - name: Build Application Binaries
+        run: |
+          echo "Replace this with your build command (e.g., 'npm run build', 'make build', 'cargo build --release')"
+          # mkdir -p dist && touch dist/myapp-linux dist/myapp-windows.exe
+
       - name: Publish GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,6 +126,7 @@ jobs:
           git tag -l --format='%(contents:body)' $NEW_TAG > release_notes.md
 
           # Create the official GitHub Release UI page
+          # Add the path to your compiled binaries at the end of this command (e.g., dist/myapp-linux)
           gh release create $NEW_TAG \
             --title "Release $NEW_TAG" \
             --notes-file release_notes.md
