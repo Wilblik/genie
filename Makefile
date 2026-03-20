@@ -26,17 +26,10 @@ test: build
 	@echo "Running tests..."
 	go test ./internal/...
 
-install: build test
-	@echo "Installing to $(INSTALL_DIR)..."
-	@$(MKDIR) $(INSTALL_DIR)
-	$(CP) $(BUILD_DIR)/$(BINARY_OUT) $(INSTALL_DIR)/$(BINARY_OUT)
-ifeq ($(OS),Windows_NT)
-	@echo "Adding $(INSTALL_DIR) to PATH..."
-	@setx PATH "%PATH%;$(INSTALL_DIR)"
-	@echo "Installation complete! Please RESTART your terminal to use genie."
-else
-	@echo "Installation complete!"
-endif
+install: test
+	@echo "Installing genie via go install..."
+	go install ./cmd/genie
+	@echo "Installation complete! Make sure $$(go env GOPATH)/bin is in your PATH."
 
 clean:
 	@echo "Cleaning up..."
