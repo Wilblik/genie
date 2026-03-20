@@ -92,7 +92,7 @@ var semverRegex = regexp.MustCompile(`^v?(\d+)\.(\d+)\.(\d+)$`)
 
 func calculateNextVersion(currentTag string, commits []models.CommitMessage) (string, error) {
 	if currentTag == "" {
-		currentTag = "v0.1.0" // Default for first release
+		currentTag = "v0.0.0" // Default for first release
 	}
 
 	matches := semverRegex.FindStringSubmatch(strings.TrimSpace(currentTag))

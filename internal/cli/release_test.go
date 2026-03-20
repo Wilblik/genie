@@ -20,7 +20,7 @@ func TestCalculateNextVersion(t *testing.T) {
 			commits: []models.CommitMessage{
 				{ChangeType: "feat"},
 			},
-			want:    "v0.2.0",
+			want:    "v0.1.0",
 			wantErr: false,
 		},
 		{
