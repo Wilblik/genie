@@ -14,27 +14,35 @@ import (
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+	initCmd.AddCommand(initGitCmd)
+	initCmd.AddCommand(initGithubCmd)
 }
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Interactive setup for Genie in your repository",
+	Short: "Setup Genie in your repository",
+	Long:  `Generate configuration and hook/workflow files to use Genie.`,
+}
+
+var initGitCmd = &cobra.Command{
+	Use:   "git",
+	Short: "Interactive setup for Genie (.genie.yaml and Git hooks)",
 	Long:  `Guides you through setting up Genie, including protected branches, scopes, and enforcement levels.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if _, err := os.Stat(config.ConfigFileName); err == nil {
 			if !promptOverwrite() {
 				fmt.Println("Init cancelled.")
-				return nil;
+				return nil
 			}
 		}
 
 		cfg := config.NewDefaultConfig()
+
 		if err := promptBranch(cfg);  err != nil { return err }
 		if err := promptScope(cfg);   err != nil { return err }
 		if err := promptEnforce(cfg); err != nil { return err }
 		if err := promptTypes(cfg);   err != nil { return err }
 		if err := promptScopes(cfg);  err != nil { return err }
-		if err := promptGithubAction(cfg); err != nil { return err }
 
 		if err := cfg.Save(); err != nil {
 			return fmt.Errorf("failed to save config: %w", err)
@@ -50,7 +58,26 @@ var initCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("\n✨ Genie initialized successfully! Config saved to %s\n", config.ConfigFileName)
+		fmt.Printf("\n✨ Genie git initialized successfully! Config saved to %s\n", config.ConfigFileName)
+		return nil
+	},
+}
+
+var initGithubCmd = &cobra.Command{
+	Use:   "github",
+	Short: "Generate GitHub Action workflows",
+	Long:  `Interactive setup to generate GitHub Action workflows for pull requests and releases.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg, err := config.Load()
+		if err != nil {
+			return fmt.Errorf("configuration file not found. Please run 'genie init git' first")
+		}
+
+		if err := promptGithubAction(cfg); err != nil {
+			return err
+		}
+
+		fmt.Println("\n✨ GitHub workflows initialized successfully!")
 		return nil
 	},
 }
@@ -65,7 +92,7 @@ func promptOverwrite() bool {
 		return false
 	}
 
-	return true;
+	return true
 }
 
 func promptBranch(cfg *config.Config) error {
@@ -77,7 +104,7 @@ func promptBranch(cfg *config.Config) error {
 	if err != nil { return err }
 	if protectedBranch != "" { cfg.ProtectedBranch = protectedBranch }
 
-	return nil;
+	return nil
 }
 
 func promptScope(cfg *config.Config) error {
@@ -91,9 +118,8 @@ func promptScope(cfg *config.Config) error {
 	if err != nil { return err }
 	cfg.RequireScope = (resScope == "Yes")
 
-	return nil;
+	return nil
 }
-
 
 func promptEnforce(cfg *config.Config) error {
 	promptEnforce := promptui.Select{
@@ -106,9 +132,8 @@ func promptEnforce(cfg *config.Config) error {
 	if err != nil { return err }
 	cfg.EnforceAll = (resEnforce == "Strict (All branches)")
 
-	return nil;
+	return nil
 }
-
 
 func promptTypes(cfg *config.Config) error {
 	promptTypes := promptui.Prompt{
@@ -125,7 +150,7 @@ func promptTypes(cfg *config.Config) error {
 		}
 	}
 
-	return nil;
+	return nil
 }
 
 func promptScopes(cfg *config.Config) error {
@@ -143,12 +168,12 @@ func promptScopes(cfg *config.Config) error {
 		}
 	}
 
-	return nil;
+	return nil
 }
 
 func promptGithubAction(cfg *config.Config) error {
 	promptPR := promptui.Select{
-		Label:     "Create GitHub Action to enforce Pull Requests Titles?",
+		Label:    "Create GitHub Action to enforce Pull Requests Titles?",
 		Items:    []string{"No", "Yes"},
 		HideHelp: true,
 	}
@@ -158,7 +183,7 @@ func promptGithubAction(cfg *config.Config) error {
 	createPr := promptPrResult == "Yes"
 
 	promptRelease := promptui.Select{
-		Label:     "Create GitHub Action for Automated Releases (on demand)?",
+		Label:    "Create GitHub Action for Automated Releases (on demand)?",
 		Items:    []string{"No", "Yes"},
 		HideHelp: true,
 	}
